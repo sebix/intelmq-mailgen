@@ -109,6 +109,17 @@ class TestScriptContext(unittest.TestCase):
                     mock_smtp.return_value.send_message.assert_called_with(email_notifications[0].email, to_addrs=None)
                     markassent_context.assert_not_called()
 
+    def test_html(self):
+        with unittest.mock.patch('psycopg2.connect', autospec=True) as mock_connect:
+            cursor = mock_connect.return_value.cursor
+            script_context = self.context_with_directive(cur=cursor)
+            with unittest.mock.patch('intelmqmail.notification.ScriptContext.new_ticket_number') as new_ticket_number:
+                new_ticket_number.return_value = 1
+                email_notifications = script_context.mail_format_as_csv(template=Template.from_strings('${ticket_number} Test Subject', 'Body\n${events_as_csv}'),
+                                                                        mark_as_sent=False)
+            assert len(email_notifications) == 1
+            assert email_notifications[0].email.get('Content-Type').startswith('multipart/mixed;')
+
 
 if __name__ == '__main__':  # pragma: nocover
     unittest.main()

@@ -231,8 +231,9 @@ def send_notifications(config, directives, cur, scripts, template: Optional[Temp
             elif notifications is Postponed:
                 postponed += 1
             else:
-                with smtplib.SMTP(host=config["smtp"]["host"],
-                                  port=config["smtp"]["port"]) as smtp:
+                #with smtplib.SMTP(host=config["smtp"]["host"],
+                #                  port=config["smtp"]["port"]) as smtp:
+                with open()
                     context = SendContext(cur, smtp)
                     for notification in notifications:
                         if get_preview:

@@ -12,6 +12,8 @@ from email.message import EmailMessage
 from email.contentmanager import ContentManager, raw_data_manager
 from email.policy import SMTP
 from email.utils import formatdate, make_msgid, parseaddr
+from lxml.html import tostring as html_tostring, fromstring as html_fromstring
+from lxml.html.clean import Cleaner
 
 import gpg
 
@@ -180,3 +182,31 @@ def detached_signature(gpgme_ctx, plainbytes):
         raise
 
     return (signResult.signatures[0].hash_algo, signature)
+
+
+HTMLCleaner = Cleaner(page_structure=True,
+                  meta=True,
+                  embedded=True,
+                  links=True,
+                  style=True,
+                  processing_instructions=True,
+                  inline_style=True,
+                  scripts=True,
+                  javascript=True,
+                  comments=True,
+                  frames=True,
+                  forms=True,
+                  annoying_tags=True,
+                  remove_unknown_tags=True,
+                  safe_attrs_only=True,
+                  safe_attrs=frozenset(['src','color', 'href', 'title', 'class', 'name', 'id']),
+                  remove_tags=('span', 'font', 'div')
+                  )
+
+def html_to_plain(input):
+    if input == '':
+        return input  # prevent lxml.etree.ParserError: Document is empty
+    cleaned = HTMLCleaner.clean_html(input)
+    cleaned = cleaned.replace('<br>', '\n')
+    tree = html_fromstring(cleaned)
+    return html_tostring(tree, method='text', encoding='utf-8').decode()

@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 import gpg
 
-from intelmqmail.mail import create_mail
+from intelmqmail.mail import create_mail, html_to_plain
 
 from .util import GpgHomeTestCase
 
@@ -135,3 +135,11 @@ class TestCreateSignedMail(MailCreationTest, GpgHomeTestCase):
         body, csv = self.check_unpack_multipart(signed, "mixed")
         self.check_body_part(body)
         self.check_csv_attachment(csv)
+
+
+class TestHtmlToPlain(unittest.TestCase):
+    def test_simple(self):
+        assert html_to_plain('') == ''
+        assert html_to_plain('Lorem ipsum') == 'Lorem ipsum'
+        assert html_to_plain('Lorem ipsum<br>dolor sit amet') == 'Lorem ipsum\ndolor sit amet'
+        assert html_to_plain('<h1>Lorem</h1><p>ipsum</p>') == 'Lorem\n\nipsum'
